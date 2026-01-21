@@ -1,3 +1,7 @@
+import { useState, useEffect, useRef } from "react";
+import { Modal } from "bootstrap";
+
+import PicModal from "./PicModal";
 const ProductModal = ({
   modalRef,
   modalType,
@@ -6,10 +10,29 @@ const ProductModal = ({
   handleImageChange,
   handleAddImage,
   handleRemoveImage,
+  handleFileUploadAndChange,
   delProductData,
   addOrUpdateProductData,
   closeModal,
 }) => {
+  const [photoUrl, setPhotoUrl] = useState(
+    "https://images.unsplash.com/photo-1594322436404-5a0526db4d13?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8bm90JTIwZm91bmR8ZW58MHx8MHx8fDA%3D",
+  );
+
+  const modalRefPic = useRef(null);
+  const myModalPic = useRef(null);
+
+  useEffect(() => {
+    myModalPic.current = new Modal(modalRefPic.current);
+  }, []);
+
+  const getSinglePic = (url) => {
+    setPhotoUrl(url);
+    if (photoUrl !== "") {
+      myModalPic.current.show();
+    }
+  };
+
   return (
     <div
       className="modal fade"
@@ -19,7 +42,9 @@ const ProductModal = ({
       aria-labelledby="exampleModalLabel"
       aria-hidden="true"
     >
-      <div className="modal-dialog modal-xl">
+      <PicModal modalRef={modalRefPic} photoUrl={photoUrl} />
+
+      <div className="modal-dialog modal-dialog-centered modal-xl">
         <div className="modal-content">
           <div className="modal-header">
             <h5 className="modal-title " id="exampleModalLabel">
@@ -47,6 +72,19 @@ const ProductModal = ({
             ) : (
               <div className="row">
                 <div className="col-sm-4">
+                  <div className="mb-3">
+                    <label htmlFor="fileInput" className="form-label">
+                      圖片上傳
+                    </label>
+                    <input
+                      type="file"
+                      accept=".jpg,.jpeg,.png"
+                      className="form-control"
+                      id="fileInput"
+                      onChange={handleFileUploadAndChange}
+                    />
+                  </div>
+
                   <label htmlFor="imageUrl" className="form-label">
                     輸入圖片網址
                   </label>
@@ -63,6 +101,7 @@ const ProductModal = ({
                     className="img-fluid"
                     src={templateData.imageUrl}
                     alt="主圖"
+                    onClick={() => getSinglePic(templateData.imageUrl)}
                   />
 
                   <div>
@@ -82,6 +121,7 @@ const ProductModal = ({
                             src={image}
                             alt={`副圖_ ${index + 1}`}
                             className="img-preview mb-2"
+                            onClick={() => getSinglePic(image)}
                           />
                         )}
                       </div>

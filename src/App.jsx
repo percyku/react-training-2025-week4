@@ -183,13 +183,10 @@ function App() {
   };
 
   //處理Pagination page 當前數值
-  const changePage = useCallback(
-    (e, page) => {
-      e.preventDefault();
-      getProductInfo(page);
-    },
-    [pagination],
-  );
+  const changePage = useCallback((e, page) => {
+    e.preventDefault();
+    getProductInfo(page);
+  }, []);
 
   const getProductInfo = async (page = 1) => {
     try {
@@ -200,7 +197,7 @@ function App() {
       setProducts(res.data.products);
       setPagiantion(res.data.pagination);
     } catch (error) {
-      toast.error(`取得資料失敗! +${error.response.data.message}`);
+      toast.error(`取得資料失敗! ${error.response.data.message}`);
       setIsAuth(false);
     } finally {
       setIsLoading(false);
@@ -242,9 +239,9 @@ function App() {
       getProductInfo();
     } catch (error) {
       if (modalType === "edit") {
-        toast.error(`更新失敗! +${error.response.data.message}`);
+        toast.error(`更新失敗! ${error.response.data.message}`);
       } else {
-        toast.error(`新增失敗! +${error.response.data.message}`);
+        toast.error(`新增失敗! ${error.response.data.message}`);
       }
     } finally {
       setIsLoading(false);
@@ -261,7 +258,32 @@ function App() {
       productModalRef.current.hide();
       getProductInfo();
     } catch (error) {
-      toast.error(`刪除失敗! +${error.response.data.message}`);
+      toast.error(`刪除失敗! ${error.response.data.message}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleFileUploadAndChange = async (e) => {
+    const url = `${API_BASE}/api/${API_PATH}/admin/upload`;
+
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsLoading(true);
+      const formData = new FormData();
+      formData.append("file-to-upload", file);
+
+      let res = await axios.post(url, formData);
+      const uploadedImageUrl = res.data.imageUrl;
+      toast.success("Upload success:");
+      setTemplateData((prevTemplateData) => ({
+        ...prevTemplateData,
+        imageUrl: uploadedImageUrl,
+      }));
+    } catch (error) {
+      toast.error("Upload error:", error);
     } finally {
       setIsLoading(false);
     }
@@ -272,8 +294,12 @@ function App() {
       <Toaster />
       {isAuth ? (
         <>
-          <MainTable products={products} openModal={openModal} />
-          <Pagination pagination={pagination} changePage={changePage} />
+          <div className="mb-5">
+            <MainTable products={products} openModal={openModal} />
+          </div>
+          <div className="d-flex justify-content-center">
+            <Pagination pagination={pagination} changePage={changePage} />
+          </div>
         </>
       ) : (
         <Login
@@ -292,6 +318,7 @@ function App() {
         handleImageChange={handleImageChange}
         handleAddImage={handleAddImage}
         handleRemoveImage={handleRemoveImage}
+        handleFileUploadAndChange={handleFileUploadAndChange}
         delProductData={delProductData}
         addOrUpdateProductData={addOrUpdateProductData}
         closeModal={closeModal}
